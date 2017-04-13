@@ -22,7 +22,7 @@ Postprocess = Optional[List[Tuple[SeriesName, Callable]]]
 # pylint: enable=invalid-name
 
 
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long, too-many-nested-blocks
 # pylint: disable=too-many-arguments, too-many-locals, too-many-branches
 # pylint: disable=too-many-statements
 def training_loop(tf_manager: TensorFlowManager,

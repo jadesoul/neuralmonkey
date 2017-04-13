@@ -16,7 +16,7 @@ from neuralmonkey.logging import Logging, log
 from neuralmonkey.config.configuration import Configuration
 from neuralmonkey.learning_utils import training_loop
 
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long, too-many-locals, too-many-branches
 def create_config() -> Configuration:
     config = Configuration()
 
@@ -165,7 +165,11 @@ def main() -> None:
 
     try:
         check_dataset_and_coders(cfg.model.train_dataset, cfg.model.runners)
-        check_dataset_and_coders(cfg.model.val_dataset, cfg.model.runners)
+        if cfg.model.val_dataset is not None:
+            check_dataset_and_coders(cfg.model.val_dataset, cfg.model.runners)
+        if cfg.model.val_datasets is not None:
+            for val_dataset in cfg.model.val_datasets:
+                check_dataset_and_coders(val_dataset, cfg.model.runners)
     except CheckingException as exc:
         log(str(exc), color='red')
         exit(1)
