@@ -27,6 +27,7 @@ def create_config() -> Configuration:
     config.add_argument('batch_size', cond=lambda x: x > 0)
     config.add_argument('train_dataset')
     config.add_argument('val_dataset')
+    config.add_argument('val_datasets')
     config.add_argument('output')
     config.add_argument('evaluation')
     config.add_argument('runners')
@@ -181,10 +182,11 @@ def main() -> None:
         trainer=cfg.model.trainer,
         batch_size=cfg.model.batch_size,
         train_dataset=cfg.model.train_dataset,
-        val_dataset=cfg.model.val_dataset,
         log_directory=cfg.model.output,
         evaluators=cfg.model.evaluation,
         runners=cfg.model.runners,
+        val_dataset=cfg.model.val_dataset,
+        val_datasets=cfg.model.val_datasets,
         test_datasets=cfg.model.test_datasets,
         logging_period=cfg.model.logging_period,
         validation_period=cfg.model.validation_period,
