@@ -22,6 +22,7 @@ Postprocess = Optional[List[Tuple[SeriesName, Callable]]]
 # pylint: enable=invalid-name
 
 
+# pylint: disable=line-too-long
 # pylint: disable=too-many-arguments, too-many-locals, too-many-branches
 # pylint: disable=too-many-statements
 def training_loop(tf_manager: TensorFlowManager,
@@ -66,8 +67,7 @@ def training_loop(tf_manager: TensorFlowManager,
             means the generated and dataset series have the same name.
     """
     if validation_period < logging_period:
-        raise AssertionError(
-            "Validation period can't be smaller than logging period.")
+        raise AssertionError("Validation period can't be smaller than logging period.")
     _check_series_collisions(runners, postprocess)
 
     _log_model_variables()
@@ -83,16 +83,12 @@ def training_loop(tf_manager: TensorFlowManager,
                   for e in evaluators]
 
     if evaluators:
-        main_metric = "{}/{}".format(evaluators[-1][0],
-                                     evaluators[-1][-1].name)
+        main_metric = "{}/{}".format(evaluators[-1][0], evaluators[-1][-1].name)
     else:
-        main_metric = "{}/{}".format(runners[-1].decoder_data_id,
-                                     runners[-1].loss_names[0])
+        main_metric = "{}/{}".format(runners[-1].decoder_data_id, runners[-1].loss_names[0])
 
         if not tf_manager.minimize_metric:
-            raise ValueError("minimize_metric must be set to True in "
-                             "TensorFlowManager when using loss as "
-                             "the main metric")
+            raise ValueError("minimize_metric must be set to True in TensorFlowManager when using loss as the main metric")
 
     step = 0
     seen_instances = 0
@@ -100,15 +96,13 @@ def training_loop(tf_manager: TensorFlowManager,
     if initial_variables is None:
         # Assume we don't look at coder checkpoints when global
         # initial variables are supplied
-        tf_manager.initialize_model_parts(
-            runners + [trainer], save=True)  # type: ignore
+        tf_manager.initialize_model_parts(runners + [trainer], save=True)  # type: ignore
     else:
         tf_manager.restore(initial_variables)
 
     if log_directory:
         log("Initializing TensorBoard summary writer.")
-        tb_writer = tf.summary.FileWriter(log_directory,
-                                          tf_manager.sessions[0].graph)
+        tb_writer = tf.summary.FileWriter(log_directory, tf_manager.sessions[0].graph)
         log("TensorBoard writer initialized.")
 
     log("Starting training")
@@ -122,8 +116,7 @@ def training_loop(tf_manager: TensorFlowManager,
 
             if epoch_n == 1 and train_start_offset:
                 if not isinstance(train_dataset, LazyDataset):
-                    warn("Not skipping training instances with "
-                         "shuffled in-memory dataset")
+                    warn("Not skipping training instances with shuffled in-memory dataset")
                 else:
                     _skip_lines(train_start_offset, train_batched_datasets)
 
@@ -131,38 +124,55 @@ def training_loop(tf_manager: TensorFlowManager,
                 step += 1
                 seen_instances += len(batch_dataset)
                 if step % logging_period == logging_period - 1:
-                    trainer_result = tf_manager.execute(
-                        batch_dataset, [trainer], train=True,
-                        summaries=True)
+                    trainer_result = tf_manager.execute(batch_dataset,
+                                                        [trainer],
+                                                        train=True,
+                                                        summaries=True)
                     train_results, train_outputs = run_on_dataset(
-                        tf_manager, runners, batch_dataset,
-                        postprocess, write_out=False)
+                                                        tf_manager,
+                                                        runners,
+                                                        batch_dataset,
+                                                        postprocess,
+                                                        write_out=False)
                     # ensure train outputs are iterable more than once
-                    train_outputs = {k: list(v) for k, v
-                                     in train_outputs.items()}
+                    train_outputs = {k: list(v) for k, v in train_outputs.items()}
                     train_evaluation = evaluation(
-                        evaluators, batch_dataset, runners,
-                        train_results, train_outputs)
+                        evaluators,
+                        batch_dataset,
+                        runners,
+                        train_results,
+                        train_outputs)
 
-                    _log_continuous_evaluation(tb_writer, tf_manager,
+                    _log_continuous_evaluation(tb_writer,
+                                               tf_manager,
                                                main_metric,
                                                train_evaluation,
-                                               seen_instances, epoch_n,
-                                               epochs, trainer_result,
+                                               seen_instances,
+                                               epoch_n,
+                                               epochs,
+                                               trainer_result,
                                                train=True)
                 else:
-                    tf_manager.execute(batch_dataset, [trainer],
-                                       train=True, summaries=False)
+                    tf_manager.execute(batch_dataset,
+                                       [trainer],
+                                       train=True,
+                                       summaries=False)
 
                 if step % validation_period == validation_period - 1:
                     val_results, val_outputs = run_on_dataset(
-                        tf_manager, runners, val_dataset,
-                        postprocess, write_out=False,
+                        tf_manager,
+                        runners,
+                        val_dataset,
+                        postprocess,
+                        write_out=False,
                         batch_size=runners_batch_size)
                     # ensure val outputs are iterable more than once
                     val_outputs = {k: list(v) for k, v in val_outputs.items()}
                     val_evaluation = evaluation(
-                        evaluators, val_dataset, runners, val_results,
+                        evaluators,
+                        val_dataset,
+                        runners,
+                        val_results,
                         val_outputs)
 
                     this_score = val_evaluation[main_metric]
@@ -171,12 +181,15 @@ def training_loop(tf_manager: TensorFlowManager,
                     log("Validation (epoch {}, batch number {}):"
                         .format(epoch_n, batch_n), color='blue')
 
-                    _log_continuous_evaluation(tb_writer, tf_manager,
+                    _log_continuous_evaluation(tb_writer,
+                                               tf_manager,
                                                main_metric,
                                                val_evaluation,
-                                               seen_instances, epoch_n,
+                                               seen_instances,
+                                               epoch_n,
                                                epochs,
-                                               val_results, train=False)
+                                               val_results,
+                                               train=False)
 
                     if this_score == tf_manager.best_score:
                         best_score_str = colored(
@@ -185,15 +198,16 @@ def training_loop(tf_manager: TensorFlowManager,
                     else:
                         best_score_str = "{:.4g}".format(tf_manager.best_score)
 
-                    log("best {} on validation: {} (in epoch {}, "
-                        "after batch number {})"
-                        .format(main_metric, best_score_str,
+                    log("best {} on validation: {} (in epoch {}, after batch number {})"
+                        .format(main_metric,
+                                best_score_str,
                                 tf_manager.best_score_epoch,
                                 tf_manager.best_score_batch),
                         color='blue')
 
                     log_print("")
-                    _print_examples(val_dataset, val_outputs,
+                    _print_examples(val_dataset,
+                                    val_outputs,
                                     val_preview_input_series,
                                     val_preview_output_series,
                                     val_preview_num_examples)
@@ -202,7 +216,8 @@ def training_loop(tf_manager: TensorFlowManager,
         log("Training interrupted by user.")
 
     log("Training finished. Maximum {} on validation data: {:.4g}, epoch {}"
-        .format(main_metric, tf_manager.best_score,
+        .format(main_metric,
+                tf_manager.best_score,
                 tf_manager.best_score_epoch))
 
     if test_datasets:
@@ -210,12 +225,19 @@ def training_loop(tf_manager: TensorFlowManager,
 
     for dataset in test_datasets:
         test_results, test_outputs = run_on_dataset(
-            tf_manager, runners, dataset, postprocess,
-            write_out=True, batch_size=runners_batch_size)
+            tf_manager,
+            runners,
+            dataset,
+            postprocess,
+            write_out=True,
+            batch_size=runners_batch_size)
         # ensure test outputs are iterable more than once
         test_outputs = {k: list(v) for k, v in test_outputs.items()}
-        eval_result = evaluation(evaluators, dataset, runners,
-                                 test_results, test_outputs)
+        eval_result = evaluation(evaluators,
+                                 dataset,
+                                 runners,
+                                 test_results,
+                                 test_outputs)
         print_final_evaluation(dataset.name, eval_result)
 
     log("Finished.")
@@ -228,15 +250,17 @@ def _check_series_collisions(runners: List[BaseRunner],
     for runner in runners:
         series = runner.output_series
         if series in runners_outputs:
-            raise Exception(("Output series '{}' is multiple times among the "
-                             "runners' outputs.").format(series))
+            raise Exception(
+                ("Output series '{}' is multiple times among the runners' outputs.")
+                .format(series))
         else:
             runners_outputs.add(series)
     if postprocess is not None:
         for series, _ in postprocess:
             if series in runners_outputs:
-                raise Exception(("Postprocess output series '{}' "
-                                 "already exists.").format(series))
+                raise Exception(
+                    ("Postprocess output series '{}' already exists.")
+                    .format(series))
             else:
                 runners_outputs.add(series)
 
@@ -246,8 +270,7 @@ def run_on_dataset(tf_manager: TensorFlowManager,
                    dataset: Dataset,
                    postprocess: Postprocess,
                    write_out: bool=False,
-                   batch_size: Optional[int]=None) -> Tuple[
-                       List[ExecutionResult], Dict[str, List[Any]]]:
+                   batch_size: Optional[int]=None) -> Tuple[List[ExecutionResult], Dict[str, List[Any]]]:
     """Apply the model on a dataset and optionally write outputs to files.
 
     Args:
@@ -267,10 +290,10 @@ def run_on_dataset(tf_manager: TensorFlowManager,
         they are available which are dictionary function -> value.
 
     """
-    contains_targets = all(dataset.has_series(runner.decoder_data_id)
-                           for runner in runners)
+    contains_targets = all(dataset.has_series(runner.decoder_data_id) for runner in runners)
 
-    all_results = tf_manager.execute(dataset, runners,
+    all_results = tf_manager.execute(dataset,
+                                     runners,
                                      compute_losses=contains_targets,
                                      batch_size=batch_size)
 
@@ -291,8 +314,7 @@ def run_on_dataset(tf_manager: TensorFlowManager,
                     log('Result saved as numpy array to "{}"'.format(path))
                 else:
                     with open(path, 'w') as f_out:
-                        f_out.writelines(
-                            [" ".join(sent) + "\n" for sent in data])
+                        f_out.writelines([" ".join(sent) + "\n" for sent in data])
                     log("Result saved as plain text \"{}\"".format(path))
             else:
                 log("There is no output file for dataset: {}"
@@ -355,7 +377,8 @@ def _log_continuous_evaluation(tb_writer: tf.summary.FileWriter,
         meminfostr = ""
 
     eval_string = _format_evaluation_line(eval_result, main_metric)
-    eval_string = "Epoch {}/{}  Instances {}  {}".format(epoch, max_epochs,
+    eval_string = "Epoch {}/{}  Instances {}  {}".format(epoch,
+                                                         max_epochs,
                                                          seen_instances,
                                                          eval_string)
     eval_string = eval_string+meminfostr
@@ -466,8 +489,7 @@ def _print_examples(dataset: Dataset,
         num_examples = min(len(dataset), num_examples)
 
     for i in range(num_examples):
-        log_print(colored("  [{}]".format(i + 1), color="magenta",
-                          attrs=["bold"]))
+        log_print(colored("  [{}]".format(i + 1), color="magenta", attrs=["bold"]))
 
         def print_line(prefix, color, content):
             colored_prefix = colored(prefix, color=color)
@@ -475,8 +497,7 @@ def _print_examples(dataset: Dataset,
             log_print("  {}: {}".format(colored_prefix, formated))
 
         # Input source series = yellow
-        for series_id, data in sorted(source_series.items(),
-                                      key=lambda x: x[0]):
+        for series_id, data in sorted(source_series.items(), key=lambda x: x[0]):
             print_line(series_id, "yellow", data[i])
 
         # Output series = magenta
@@ -509,8 +530,7 @@ def _skip_lines(start_offset: int,
         try:
             skipped_instances += len(next(batched_datasets))  # type: ignore
         except StopIteration:
-            raise ValueError("Trying to skip more instances than "
-                             "the size of the dataset")
+            raise ValueError("Trying to skip more instances than the size of the dataset")
 
     if skipped_instances > 0:
         log("Skipped {} instances".format(skipped_instances))
@@ -520,21 +540,21 @@ def _log_model_variables() -> None:
     trainable_vars = tf.trainable_variables()
     total_params = 0
 
-    logstr = "The model has {} trainable variables:\n\n".format(
-        len(trainable_vars))
+    logstr = "The model has {} trainable variables:\n\n"\
+             .format(len(trainable_vars))
 
     logstr += colored(
         "{: ^80}{: ^20}{: ^10}\n".format("Variable name", "Shape", "Size"),
-        color="yellow", attrs=["bold"])
+        color="yellow",
+        attrs=["bold"])
 
     for var in trainable_vars:
-
         shape = var.get_shape().as_list()
         params_in_var = int(np.prod(shape))
         total_params += params_in_var
 
-        log_entry = "{: <80}{: <20}{: >10}".format(var.name, str(shape),
-                                                   params_in_var)
+        log_entry = "{: <80}{: <20}{: >10}"\
+                    .format(var.name, str(shape), params_in_var)
         logstr += "\n{}".format(log_entry)
 
     logstr += "\n"
