@@ -37,10 +37,10 @@ def _is_special_token(word: str) -> bool:
     Returns:
         True if the word is special, False otherwise.
     """
-    return (word == PAD_TOKEN
-            or word == START_TOKEN
-            or word == END_TOKEN
-            or word == UNK_TOKEN)
+    return (word == PAD_TOKEN or
+            word == START_TOKEN or
+            word == END_TOKEN or
+            word == UNK_TOKEN)
 
 
 def from_file(path: str) -> 'Vocabulary':
@@ -370,7 +370,7 @@ class Vocabulary(collections.Sized):
                                      if self.word_count[w] < min_freq])
             log("Removing {} infrequent (<{}) words from vocabulary".format(
                 infreq_word_count, min_freq))
-            new_size = len(self)-infreq_word_count
+            new_size = len(self) - infreq_word_count
             self.truncate(new_size)
 
     def sentences_to_tensor(

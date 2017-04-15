@@ -114,12 +114,12 @@ def main() -> None:
 
     cont_index = 0
 
-    while (os.path.exists(log_file)
-           or os.path.exists(ini_file)
-           or os.path.exists(git_commit_file)
-           or os.path.exists(git_diff_file)
-           or os.path.exists(variables_file_prefix)
-           or os.path.exists("{}.0".format(variables_file_prefix))):
+    while (os.path.exists(log_file) or
+           os.path.exists(ini_file) or
+           os.path.exists(git_commit_file) or
+           os.path.exists(git_diff_file) or
+           os.path.exists(variables_file_prefix) or
+           os.path.exists("{}.0".format(variables_file_prefix))):
         cont_index += 1
 
         args_file = "{}/args.cont-{}".format(

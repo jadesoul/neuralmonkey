@@ -16,10 +16,10 @@ T = TypeVar('T')
 
 def deprecated(func: Callable[..., T]) -> Callable[..., T]:
     def dep_func(*args, **kwargs) -> T:
-        warn("Use of deprecated function from "
-             + "'neuralmonkey.config.utils'. " +
-             "Use '{}' instead.".format(func.__module__[13:]
-                                        + '.' + func.__name__))
+        warn("Use of deprecated function from " +
+             "'neuralmonkey.config.utils'. " +
+             "Use '{}' instead.".format(func.__module__[13:] +
+                                        '.' + func.__name__))
         return func(*args, **kwargs)
     return dep_func
 

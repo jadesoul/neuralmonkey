@@ -91,8 +91,8 @@ class Attention(object):
             self.attentions_in_time.append(a)
 
             # Now calculate the attention-weighted vector d.
-            d = tf.reduce_sum(tf.expand_dims(tf.expand_dims(a, -1), -1)
-                              * self.att_states_reshaped, [1, 2])
+            d = tf.reduce_sum(tf.expand_dims(tf.expand_dims(a, -1), -1) *
+                              self.att_states_reshaped, [1, 2])
 
             return tf.reshape(d, [-1, self.attn_size])
 

@@ -33,8 +33,8 @@ def index():
 def list_experiments():
     logdir = APP.config['logdir']
     experiment_list = [dr for dr in os.listdir(logdir)
-                       if os.path.isdir(os.path.join(logdir, dr))
-                       and os.path.isfile(os.path.join(
+                       if os.path.isdir(os.path.join(logdir, dr)) and
+                       os.path.isfile(os.path.join(
                            logdir, dr, 'experiment.ini'))]
 
     if os.path.isfile(os.path.join(logdir, 'experiment.ini')):

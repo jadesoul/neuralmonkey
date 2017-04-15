@@ -204,8 +204,8 @@ class LazyDataset(Dataset):
         Returns:
             True if the dataset contains the series, False otherwise.
         """
-        return (name in self.series_paths_and_readers
-                or name in self.preprocess_series)
+        return (name in self.series_paths_and_readers or
+                name in self.preprocess_series)
 
     def get_series(self, name: str, allow_none: bool = False) -> Iterable:
         """Get the data series with a given name.

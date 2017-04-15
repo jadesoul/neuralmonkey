@@ -203,7 +203,7 @@ def build_config(config_dicts: Dict[str, Any],
         existing_names = {x[7:] for x in existing_objects.keys()} | {'main'}
         unused = config_dicts.keys() - existing_names
         if unused:
-            warn("Configuration contains unused sections: "
-                 + str(unused) + ".")
+            warn("Configuration contains unused sections: " +
+                 str(unused) + ".")
 
     return configuration
